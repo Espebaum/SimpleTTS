@@ -399,4 +399,4 @@ def save_mel_to_wav(mel, sample_rate, filename):
 
 - 시험으로 생성해본 wav의 경우, 에포크를 10번으로 설정했는데 잡음밖에 들리지 않았다. 아마도 더 많은 훈련이 필요한 것 같다.
 
-- 구현의 편의성을 위해 GRU
+- 구현의 편의성을 위해 GRU를 사용했는데, LSTM이나 Transformer를 사용해볼 수도 있을 것 같다.
