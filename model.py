@@ -40,5 +40,7 @@ class SimpleTTS(nn.Module):
 		stop_output = self.stop_token(decoder_outputs) # ([2, 100, 1])
 		# print(stop_output.shape) 
 		stop_output = stop_output.squeeze(-1) # ([2, 100])
+
+		print("mel shape:", mel_output.shape, "stop shape:", stop_output.shape)
 		
 		return mel_output, stop_output

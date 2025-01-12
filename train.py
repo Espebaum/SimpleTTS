@@ -8,26 +8,24 @@ from preprocess import text_to_tensor
 def infer_tts(model, text, char_to_idx, mel_dim, max_length=100):
     model.eval()
     
-    # Convert text to tensor
+    # 텍스트를 텐서를 변환
     text_tensor = text_to_tensor(text, char_to_idx, max_length).unsqueeze(0).cuda()
-    mel_input = torch.zeros(1, 1, mel_dim).cuda()  # Start of sequence (SOS)
+    mel_input = torch.zeros(1, 1, mel_dim).cuda()
     
     generated_mel = []
     for _ in range(max_length):
         mel_output, stop_output = model(text_tensor, mel_input)
-        mel_step = mel_output[:, -1, :]  # Last time step
+        mel_step = mel_output[:, -1, :]
         generated_mel.append(mel_step)
         
-        # Check stop token with a reasonable threshold
-        if torch.sigmoid(stop_output[:, -1]) > 0.9:  # Adjust threshold if necessary
+        if torch.sigmoid(stop_output[:, -1]) > 0.9:
             break
         
         mel_input = torch.cat([mel_input, mel_step.unsqueeze(1)], dim=1)
     
-    # Ensure generated_mel is not empty
     if len(generated_mel) == 0:
         print("Warning: No mel spectrogram was generated!")
-        return torch.zeros(1, mel_dim)  # Return a dummy mel spectrogram
+        return torch.zeros(1, mel_dim)
     
     return torch.cat(generated_mel, dim=0)
 

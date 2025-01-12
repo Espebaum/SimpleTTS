@@ -6,15 +6,6 @@ from preprocess import wav_to_mel, text_to_tensor, mel_to_tensor
 
 class TTSDataset(Dataset):
     def __init__(self, metadata_path, wav_dir, char_to_idx, max_text_length, max_mel_length, mel_dim):
-        """
-        Args:
-            metadata_path: Path to the metadata file (e.g., metadata.csv).
-            wav_dir: Directory containing WAV files.
-            char_to_idx: Dictionary for mapping characters to indices.
-            max_text_length: Maximum length for text sequences.
-            max_mel_length: Maximum length for mel spectrograms.
-            mel_dim: Number of mel bands.
-        """
         self.wav_dir = wav_dir
         self.char_to_idx = char_to_idx
         self.max_text_length = max_text_length

@@ -36,14 +36,11 @@ def plot_mel_spectrogram(mel, title="Mel Spectrogram"):
 
 def save_mel_to_wav(mel, sample_rate, filename):
     """
-    Convert Mel Spectrogram to WAV and save it using torchaudio.
-
     Args:
         mel (torch.Tensor): Mel Spectrogram (shape: [n_mels, time_frames]).
         sample_rate (int): Target sample rate.
         filename (str): Path to save the WAV file.
     """
-    # Ensure mel tensor is on the same device as transforms
     device = mel.device  # Get the device of the input mel tensor
 
     # Calculate n_fft and n_stft from mel.shape[0] (n_mels)
@@ -123,7 +120,7 @@ if __name__ == "__main__":
         torch.save(model.state_dict(), model_path)
         print(f"Model saved as {model_path}.")
 
-    # Inference
+    # 추론
     test_text = "hello world"
     generated_mel = infer_tts(model, test_text, char_to_idx, mel_dim)
     print("Generated mel shape:", generated_mel.shape)
@@ -131,5 +128,5 @@ if __name__ == "__main__":
     # 멜 스펙트로그램 시각화
     plot_mel_spectrogram(generated_mel, title="Generated Mel Spectrogram")
 
-    # Save Mel as WAV
+    # mel을 wav로 바꾸어 저장
     save_mel_to_wav(generated_mel, sample_rate=22050, filename="generated.wav")
