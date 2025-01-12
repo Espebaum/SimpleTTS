@@ -61,11 +61,12 @@ def collate_fn(batch):
 
 def wav_to_mel(file_path, sr=22050, n_fft=1024, hop_length=256, n_mels=80):
     try:
+        # shape [1, num_samples]
         waveform, _ = torchaudio.load(file_path)
+        # 모노 오디오 [1, num_samples]에서 채널 차원 제거([num_samples])
         waveform = waveform.squeeze(0)  
-        # Remove the channel dimension (mono audio)
 
-        # MelSpectrogram transform
+        # 멜 스펙트로그램 변형
         mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(
             sample_rate=sr,
             n_fft=n_fft,
@@ -74,16 +75,15 @@ def wav_to_mel(file_path, sr=22050, n_fft=1024, hop_length=256, n_mels=80):
             power=2.0,
         )
 
-        # Generate mel spectrogram
+        # 멜 스펙트로그램 생성
         mel_spectrogram = mel_spectrogram_transform(waveform)
 
-        # Convert to decibel scale
+        # 파워 스케일을 데시벨 스케일로 변경
         mel_db_transform = torchaudio.transforms.AmplitudeToDB(stype="power", top_db=80)
         mel_db = mel_db_transform(mel_spectrogram)
-        print("MEL DB Shape:", mel_db.shape)
 
-        # Transpose to (time, n_mels)
-        return mel_db.T  # Shape: (time_frames, n_mels)
+        # 입력 형식을 맞추기 위해 (f, t)를 (t, f)로 전치
+        return mel_db.T  # Shape: (time, frequency)
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
         return torch.zeros((1, n_mels), dtype=torch.float)

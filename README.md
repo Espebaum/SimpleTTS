@@ -1,8 +1,8 @@
 # 프로젝트 결과 보고서
 
-![link](https://github.com/Espebaum/SimpleTTS)
+![참고](https://medium.com/@tttzof351/build-text-to-speech-from-scratch-part-1-ba8b313a504f)
 
-## (1) 데이터 전처리 방법
+## (1) 데이터 전처리
 
 ### 딕셔너리
 
@@ -69,8 +69,7 @@ data[0] = {
 - 앞서 만들어둔 딕셔너리, metadata의 경로와 임의의 변수들을 사용해 커스텀 데이터셋을 생성합니다.
 
 ```python
-dataset = TTSDataset(metadata_path, wav_dir, char_to_idx, \
-                         max_text_length, max_mel_length, mel_dim)
+dataset = TTSDataset(metadata_path, wav_dir, max_text_length, max_mel_length, mel_dim)
 
 class TTSDataset(Dataset):
     def __init__(self, metadata_path, wav_dir, char_to_idx, max_text_length, max_mel_length, mel_dim):
@@ -120,4 +119,66 @@ class TTSDataset(Dataset):
         )
         
         return text_tensor, mel_tensor, mel_input, stop_token
+
+dataloader = DataLoader(
+        dataset,
+        batch_size=2,
+        shuffle=True,
+        collate_fn=collate_fn
+    )
 ```
+
+- 데이터셋의 메타 데이터의 각 인덱스에는 0번째로 텍스트가, 1번째로 wav ndarray가 포함되는데, 그 요소들을 각각 텐서로 변환하기 위한 함수들입니다.
+
+```python
+def text_to_tensor(text, char_to_idx, max_length):
+    """
+    텍스트를 정수 텐서로 변환.
+    """
+    unk = len(char_to_idx)
+    text_idx = [char_to_idx.get(char, unk)
+                for char in text[:max_length]]  # 없는 문자는 0으로 처리
+    text_idx += [char_to_idx['EOS']] * (max_length - len(text_idx))
+    return torch.tensor(text_idx, dtype=torch.long)
+
+def wav_to_mel(file_path, sr=22050, n_fft=1024, hop_length=256, n_mels=80):
+    try:
+        # shape [1, num_samples]
+        waveform, _ = torchaudio.load(file_path)
+        # 모노 오디오 [1, num_samples]에서 채널 차원 제거([num_samples])
+        waveform = waveform.squeeze(0)  
+
+        # 멜 스펙트로그램 변형
+        mel_spectrogram_transform = torchaudio.transforms.MelSpectrogram(
+            sample_rate=sr,
+            n_fft=n_fft,
+            hop_length=hop_length,
+            n_mels=n_mels,
+            power=2.0,
+        )
+
+        # 멜 스펙트로그램 생성
+        mel_spectrogram = mel_spectrogram_transform(waveform)
+
+        # 파워 스케일을 데시벨 스케일로 변경
+        mel_db_transform = torchaudio.transforms.AmplitudeToDB(stype="power", top_db=80)
+        mel_db = mel_db_transform(mel_spectrogram)
+
+        # 입력 형식을 맞추기 위해 (f, t)를 (t, f)로 전치
+        return mel_db.T  # Shape: (time, frequency)
+    except Exception as e:
+        print(f"Error processing {file_path}: {e}")
+        return torch.zeros((1, n_mels), dtype=torch.float)
+
+def mel_to_tensor(mel, max_length, mel_dim):
+    """
+    멜 스펙트로그램을 텐서로 변환
+    """
+    mel = mel[:max_length]
+    mel = torch.cat([mel, torch.zeros(max_length - len(mel), mel_dim)], dim=0)
+    return mel
+```
+
+## (2) 모델
+
+- 

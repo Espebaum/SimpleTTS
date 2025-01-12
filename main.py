@@ -97,7 +97,6 @@ if __name__ == "__main__":
     dataset = TTSDataset(metadata_path, wav_dir, char_to_idx,
                          max_text_length, max_mel_length, mel_dim)
 
-    # text_tensor, mel_tensor, mel_input, stop_targets
     dataloader = DataLoader(
         dataset,
         batch_size=2,
