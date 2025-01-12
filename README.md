@@ -367,12 +367,12 @@ def infer_tts(model, text, char_to_idx, mel_dim, max_length=100):
 def save_mel_to_wav(mel, sample_rate, filename):
     device = mel.device
 
-    # Calculate n_fft and n_stft from mel.shape[0] (n_mels)
+    # FFT 관련 파라미터 계산
     n_mels = mel.shape[0]
-    n_fft = max(2048, 4 * (n_mels - 1))  # Ensure n_fft >= win_length
+    n_fft = max(2048, 4 * (n_mels - 1))
     n_stft = n_fft // 2 + 1
 
-    # Mel spectrogram to power spectrogram
+    # 멜 스펙트로그램을 파워 스펙트로그램으로 변환
     mel_to_linear_transform = torchaudio.transforms.InverseMelScale(
         n_stft=n_stft,
         n_mels=n_mels,
@@ -381,16 +381,22 @@ def save_mel_to_wav(mel, sample_rate, filename):
 
     power_spec = mel_to_linear_transform(mel)
 
-    # Power spectrogram to waveform using Griffin-Lim
+    # 파워 스펙트로그램을 음성 신호로 변환 (Griffin-Lim)
     griffin_lim_transform = torchaudio.transforms.GriffinLim(
         n_fft=n_fft, hop_length=n_fft // 4, win_length=n_fft
     ).to(device)  # Move to the same device as mel
 
     waveform = griffin_lim_transform(power_spec)
 
-    # Save waveform as WAV file
+    # 음성 신호를 WAV 파일로 저장
     sf.write(filename, waveform.cpu().numpy(), samplerate=sample_rate)
     print(f"WAV file saved as {filename}")
 ```
 
-<img src=".\generated_mel.PNG"><>
+<img src=".\generated_mel.PNG">
+
+## (5) 결과
+
+- 시험으로 생성해본 wav의 경우, 에포크를 10번으로 설정했는데 잡음밖에 들리지 않았다. 아마도 더 많은 훈련이 필요한 것 같다.
+
+- 구현의 편의성을 위해 GRU

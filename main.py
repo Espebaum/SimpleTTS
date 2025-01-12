@@ -48,7 +48,7 @@ def save_mel_to_wav(mel, sample_rate, filename):
     n_fft = max(2048, 4 * (n_mels - 1))  # Ensure n_fft >= win_length
     n_stft = n_fft // 2 + 1
 
-    # Mel spectrogram to power spectrogram
+    # 멜 스펙트로그램을 파워 스펙트로그램으로 변환
     mel_to_linear_transform = torchaudio.transforms.InverseMelScale(
         n_stft=n_stft,
         n_mels=n_mels,
@@ -57,14 +57,14 @@ def save_mel_to_wav(mel, sample_rate, filename):
 
     power_spec = mel_to_linear_transform(mel)
 
-    # Power spectrogram to waveform using Griffin-Lim
+    # 파워 스펙트로그램을 음성 신호로 변환 (Griffin-Lim)
     griffin_lim_transform = torchaudio.transforms.GriffinLim(
         n_fft=n_fft, hop_length=n_fft // 4, win_length=n_fft
     ).to(device)  # Move to the same device as mel
 
     waveform = griffin_lim_transform(power_spec)
 
-    # Save waveform as WAV file
+    # 음성 신호를 WAV 파일로 저장
     sf.write(filename, waveform.cpu().numpy(), samplerate=sample_rate)
     print(f"WAV file saved as {filename}")
 
