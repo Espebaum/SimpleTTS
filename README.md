@@ -1,6 +1,6 @@
 # 프로젝트 결과 보고서
 
-![참고](https://medium.com/@tttzof351/build-text-to-speech-from-scratch-part-1-ba8b313a504f)
+[참고](https://medium.com/@tttzof351/build-text-to-speech-from-scratch-part-1-ba8b313a504f)
 
 ## (1) 데이터 전처리
 
